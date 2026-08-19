@@ -35,7 +35,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize the kit with all available wallet modules
   useEffect(() => {
     if (!initialized) {
       StellarWalletsKit.init({
