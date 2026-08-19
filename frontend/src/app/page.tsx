@@ -128,6 +128,12 @@ export default function LandingPage() {
             >
               Campaign Mode
             </Link>
+            <Link
+              href="/leaderboard"
+              className="px-8 py-3.5 rounded-xl glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] font-semibold text-lg transition-all"
+            >
+              Leaderboard
+            </Link>
           </motion.div>
         </section>
 
