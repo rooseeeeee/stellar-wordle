@@ -15,6 +15,9 @@ import { STELLAR_CONFIG } from "@/lib/stellar-config";
 
 const server = new rpc.Server(STELLAR_CONFIG.rpcUrl);
 
+const MAX_POLL_ATTEMPTS = 15;
+const POLL_INTERVAL = 2000;
+
 export function useContract(contractId?: string) {
   const { address } = useWallet();
   const id = contractId || STELLAR_CONFIG.contractId;
@@ -51,8 +54,8 @@ export function useContract(contractId?: string) {
   );
 
   /**
-   * State-changing call: simulate → assemble → sign → submit.
-   * Shows toast notifications for blockchain interaction feedback.
+   * State-changing call: simulate, assemble, sign, submit.
+   * Toast notifications for each step. Timeout protection so UI never gets stuck.
    */
   const write = useCallback(
     async <T = unknown>(method: string, args: xdr.ScVal[] = []): Promise<T> => {
@@ -64,7 +67,16 @@ export function useContract(contractId?: string) {
       }
 
       const contract = new Contract(id);
-      const account = await server.getAccount(address);
+
+      let account;
+      try {
+        account = await server.getAccount(address);
+      } catch {
+        toast.error("Network error", {
+          description: "Could not reach Stellar testnet. Try again.",
+        });
+        throw new Error("Failed to fetch account");
+      }
 
       const tx = new TransactionBuilder(account, {
         fee: BASE_FEE,
@@ -77,7 +89,17 @@ export function useContract(contractId?: string) {
       // Simulate
       toast.loading("Preparing transaction...", { id: "tx-progress" });
 
-      const sim = await server.simulateTransaction(tx);
+      let sim;
+      try {
+        sim = await server.simulateTransaction(tx);
+      } catch {
+        toast.error("Network timeout", {
+          id: "tx-progress",
+          description: "Stellar RPC is not responding. Try again in a moment.",
+        });
+        throw new Error("Simulation timeout");
+      }
+
       if (rpc.Api.isSimulationError(sim)) {
         const errMsg = (sim as rpc.Api.SimulateTransactionErrorResponse).error;
         toast.error("Transaction simulation failed", {
@@ -93,53 +115,89 @@ export function useContract(contractId?: string) {
       // Sign
       toast.loading("Waiting for signature...", { id: "tx-progress" });
 
-      const { signedTxXdr } = await StellarWalletsKit.signTransaction(
-        assembled.toXDR(),
-        {
-          networkPassphrase: STELLAR_CONFIG.networkPassphrase,
-          address,
-        }
-      );
+      let signedTxXdr: string;
+      try {
+        const result = await StellarWalletsKit.signTransaction(
+          assembled.toXDR(),
+          {
+            networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+            address,
+          }
+        );
+        signedTxXdr = result.signedTxXdr;
+      } catch {
+        toast.error("Signature rejected", {
+          id: "tx-progress",
+          description: "Transaction was not signed.",
+        });
+        throw new Error("User rejected signature");
+      }
 
       // Submit
       toast.loading("Submitting to network...", { id: "tx-progress" });
 
-      const signedTx = TransactionBuilder.fromXDR(
-        signedTxXdr,
-        STELLAR_CONFIG.networkPassphrase
-      );
-      const response = await server.sendTransaction(signedTx);
+      let response;
+      try {
+        const signedTx = TransactionBuilder.fromXDR(
+          signedTxXdr,
+          STELLAR_CONFIG.networkPassphrase
+        );
+        response = await server.sendTransaction(signedTx);
+      } catch {
+        toast.error("Submission failed", {
+          id: "tx-progress",
+          description: "Could not submit to network. Try again.",
+        });
+        throw new Error("Transaction submission failed");
+      }
 
       if (response.status === "ERROR") {
-        toast.error("Transaction failed to submit", {
+        toast.error("Transaction rejected", {
           id: "tx-progress",
           description: "The network rejected the transaction.",
         });
         throw new Error("Transaction submission failed");
       }
 
-      // Poll for completion
+      // Poll for completion (with timeout)
       toast.loading("Confirming on chain...", { id: "tx-progress" });
 
-      let getResponse = await server.getTransaction(response.hash);
-      while (getResponse.status === "NOT_FOUND") {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        getResponse = await server.getTransaction(response.hash);
+      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+        try {
+          const getResponse = await server.getTransaction(response.hash);
+
+          if (getResponse.status === "SUCCESS") {
+            toast.success("Transaction confirmed", {
+              id: "tx-progress",
+              description: `Hash: ${response.hash.slice(0, 8)}...`,
+            });
+            return getResponse.returnValue as unknown as T;
+          }
+
+          if (getResponse.status === "FAILED") {
+            toast.error("Transaction failed on-chain", {
+              id: "tx-progress",
+              description: "The transaction did not complete successfully.",
+            });
+            throw new Error("Transaction failed");
+          }
+        } catch (err) {
+          // If it's our own thrown error, re-throw
+          if (err instanceof Error && err.message === "Transaction failed") {
+            throw err;
+          }
+          // Otherwise it's a network error during polling, continue
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
       }
 
-      if (getResponse.status === "SUCCESS") {
-        toast.success("Transaction confirmed", {
-          id: "tx-progress",
-          description: `Hash: ${response.hash.slice(0, 8)}...`,
-        });
-        return getResponse.returnValue as unknown as T;
-      } else {
-        toast.error("Transaction failed on-chain", {
-          id: "tx-progress",
-          description: "The transaction did not complete successfully.",
-        });
-        throw new Error("Transaction failed");
-      }
+      // If we exhausted attempts, the tx might still confirm eventually
+      toast.warning("Confirmation pending", {
+        id: "tx-progress",
+        description: "Transaction submitted but confirmation is slow. Check explorer.",
+      });
+      throw new Error("Transaction confirmation timeout");
     },
     [address, id]
   );
