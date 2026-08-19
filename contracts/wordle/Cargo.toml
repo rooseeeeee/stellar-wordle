@@ -8,12 +8,10 @@ crate-type = ["cdylib", "rlib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = "21.7.7"
+soroban-sdk = "22.0.6"
 
 [dev-dependencies]
-soroban-sdk = { version = "21.7.7", features = ["testutils"] }
-# Pin to stay API-compatible with soroban-env-host 21.2.1 testutils (mirrors dMessage)
-ed25519-dalek = "=2.2.0"
+soroban-sdk = { version = "22.0.6", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"

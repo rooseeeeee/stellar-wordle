@@ -7,8 +7,7 @@
 //! `submit_guess` are signed, fee-paying writes.
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, vec, Address, Env, String,
-    Vec,
+    contract, contracterror, contractimpl, contracttype, vec, Address, Env, String, Vec,
 };
 
 const WORD_LEN: u32 = 5;
@@ -78,45 +77,6 @@ pub enum Error {
     AlreadyGuessed = 9,
 }
 
-#[contractevent]
-pub struct WordSet {
-    #[topic]
-    pub day: u32,
-    pub word: String,
-}
-
-#[contractevent]
-pub struct GameStarted {
-    #[topic]
-    pub player: Address,
-    pub day: u32,
-}
-
-#[contractevent]
-pub struct GuessMade {
-    #[topic]
-    pub player: Address,
-    pub day: u32,
-    pub guess: String,
-    pub feedback: Vec<u32>,
-}
-
-#[contractevent]
-pub struct GameWon {
-    #[topic]
-    pub player: Address,
-    pub day: u32,
-    pub guesses: u32,
-}
-
-#[contractevent]
-pub struct GameLost {
-    #[topic]
-    pub player: Address,
-    pub day: u32,
-    pub word: String,
-}
-
 #[contract]
 pub struct Wordle;
 
@@ -141,7 +101,7 @@ impl Wordle {
             .ok_or(Error::NotInitialized)?;
         admin.require_auth();
 
-        if !is_valid_word(&env, &word) {
+        if !is_valid_word(&word) {
             return Err(Error::WordInvalid);
         }
 
@@ -151,12 +111,10 @@ impl Wordle {
         env.storage().instance().set(&DataKey::Day, &day);
         env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
 
-        WordSet { day, word }.publish(&env);
         Ok(day)
     }
 
-    /// Current daily word. Public by design (ADR-001): storage is readable,
-    /// word secrecy is a game-master trust assumption.
+    /// Current daily word. Public by design (ADR-001).
     pub fn get_word(env: Env) -> Result<String, Error> {
         env.storage()
             .instance()
@@ -170,7 +128,6 @@ impl Wordle {
     }
 
     /// Idempotent: starts a game for the player against the current day.
-    /// Returns the game day. One active game per player per day.
     pub fn start_game(env: Env, player: Address) -> Result<u32, Error> {
         player.require_auth();
         let day = env.storage().instance().get(&DataKey::Day).unwrap_or(0);
@@ -195,14 +152,12 @@ impl Wordle {
                     .instance()
                     .set(&DataKey::PlayerGame(player.clone()), &game);
                 env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
-                GameStarted { player, day }.publish(&env);
                 Ok(day)
             }
         }
     }
 
-    /// Submit a 5-letter guess. Returns the per-letter feedback
-    /// [0=gray, 1=yellow, 2=green] (ADR-003: green-first, count-limited).
+    /// Submit a 5-letter guess. Returns per-letter feedback.
     pub fn submit_guess(env: Env, player: Address, guess: String) -> Result<Vec<u32>, Error> {
         player.require_auth();
         let day = env.storage().instance().get(&DataKey::Day).unwrap_or(0);
@@ -228,17 +183,17 @@ impl Wordle {
             return Err(Error::GuessLimitReached);
         }
 
-        let guess_bytes = validate_guess(&env, &guess)?;
+        let guess_bytes = validate_guess(&guess)?;
         if already_guessed(&env, &game.guesses, &guess) {
             return Err(Error::AlreadyGuessed);
         }
 
-        let answer_bytes = word_bytes(&env, &answer)?;
-        let feedback = compute_feedback(&answer_bytes, &guess_bytes);
+        let answer_bytes = word_bytes(&answer)?;
+        let feedback = compute_feedback(&env, &answer_bytes, &guess_bytes);
 
         let mut won = true;
         for i in 0..WORD_LEN {
-            if feedback[i as usize] != GREEN {
+            if feedback.get(i).unwrap_or(GRAY) != GREEN {
                 won = false;
                 break;
             }
@@ -254,40 +209,20 @@ impl Wordle {
             env.storage()
                 .instance()
                 .set(&DataKey::PlayerGame(player.clone()), &game);
-            let stats = self::update_stats_win(&env, &player, guesses.len());
-            let _ = stats;
+            update_stats_win(&env, &player, guesses.len());
             env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
-            GameWon {
-                player: player.clone(),
-                day,
-                guesses: guesses.len(),
-            }
-            .publish(&env);
         } else if guesses.len() >= MAX_GUESSES {
             game.status = STATUS_LOST;
             env.storage()
                 .instance()
                 .set(&DataKey::PlayerGame(player.clone()), &game);
-            self::update_stats_loss(&env, &player);
+            update_stats_loss(&env, &player);
             env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
-            GameLost {
-                player: player.clone(),
-                day,
-                word: answer,
-            }
-            .publish(&env);
         } else {
             env.storage()
                 .instance()
                 .set(&DataKey::PlayerGame(player.clone()), &game);
             env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
-            GuessMade {
-                player: player.clone(),
-                day,
-                guess,
-                feedback: feedback.clone(),
-            }
-            .publish(&env);
         }
 
         Ok(feedback)
@@ -301,9 +236,9 @@ impl Wordle {
             .instance()
             .get(&DataKey::Word)
             .ok_or(Error::WordNotSet)?;
-        let guess_bytes = validate_guess(&env, &guess)?;
-        let answer_bytes = word_bytes(&env, &answer)?;
-        Ok(compute_feedback(&answer_bytes, &guess_bytes))
+        let guess_bytes = validate_guess(&guess)?;
+        let answer_bytes = word_bytes(&answer)?;
+        Ok(compute_feedback(&env, &answer_bytes, &guess_bytes))
     }
 
     pub fn get_player_game(env: Env, player: Address) -> Option<PlayerGame> {
@@ -329,52 +264,47 @@ impl Wordle {
 // Helpers
 // ---------------------------------------------------------------------------
 
-fn is_valid_word(env: &Env, word: &String) -> bool {
+fn is_valid_word(word: &String) -> bool {
     if word.len() != WORD_LEN {
         return false;
     }
-    for i in 0..WORD_LEN {
-        let b = word.get(i).unwrap_or(0);
-        if b < b'a' || b > b'z' {
+    let mut buf = [0u8; WORD_LEN as usize];
+    word.copy_into_slice(&mut buf);
+    for b in buf.iter() {
+        if *b < b'a' || *b > b'z' {
             return false;
         }
     }
-    let _ = env;
     true
 }
 
-fn validate_guess(env: &Env, guess: &String) -> Result<[u8; WORD_LEN as usize], Error> {
+fn validate_guess(guess: &String) -> Result<[u8; WORD_LEN as usize], Error> {
     if guess.len() != WORD_LEN {
         return Err(Error::GuessInvalid);
     }
     let mut arr = [0u8; WORD_LEN as usize];
-    for i in 0..WORD_LEN {
-        let b = guess.get(i).unwrap_or(0);
-        if b < b'a' || b > b'z' {
+    guess.copy_into_slice(&mut arr);
+    for b in arr.iter() {
+        if *b < b'a' || *b > b'z' {
             return Err(Error::GuessInvalid);
         }
-        arr[i as usize] = b;
     }
-    let _ = env;
     Ok(arr)
 }
 
-fn word_bytes(env: &Env, word: &String) -> Result<[u8; WORD_LEN as usize], Error> {
+fn word_bytes(word: &String) -> Result<[u8; WORD_LEN as usize], Error> {
     if word.len() != WORD_LEN {
         return Err(Error::WordInvalid);
     }
     let mut arr = [0u8; WORD_LEN as usize];
-    for i in 0..WORD_LEN {
-        arr[i as usize] = word.get(i).unwrap_or(0);
-    }
-    let _ = env;
+    word.copy_into_slice(&mut arr);
     Ok(arr)
 }
 
 fn already_guessed(env: &Env, guesses: &Vec<String>, guess: &String) -> bool {
     let mut i = 0;
     while i < guesses.len() {
-        if guesses.get(i).unwrap_or_else(|| String::from_bytes(env, b"")) == *guess {
+        if guesses.get(i).unwrap_or_else(|| String::from_str(env, "")) == *guess {
             return true;
         }
         i += 1;
@@ -383,10 +313,15 @@ fn already_guessed(env: &Env, guesses: &Vec<String>, guess: &String) -> bool {
 }
 
 /// ADR-003 feedback: green pass first (count-limited), then yellow pass.
-fn compute_feedback(answer: &[u8; WORD_LEN as usize], guess: &[u8; WORD_LEN as usize]) -> Vec<u32> {
+fn compute_feedback(
+    env: &Env,
+    answer: &[u8; WORD_LEN as usize],
+    guess: &[u8; WORD_LEN as usize],
+) -> Vec<u32> {
     let mut result = [GRAY; WORD_LEN as usize];
     let mut remaining = [0u32; 26];
 
+    // Green pass
     for i in 0..WORD_LEN as usize {
         if guess[i] == answer[i] {
             result[i] = GREEN;
@@ -394,6 +329,7 @@ fn compute_feedback(answer: &[u8; WORD_LEN as usize], guess: &[u8; WORD_LEN as u
             remaining[(answer[i] - b'a') as usize] += 1;
         }
     }
+    // Yellow pass
     for i in 0..WORD_LEN as usize {
         if result[i] != GREEN {
             let idx = (guess[i] - b'a') as usize;
@@ -403,7 +339,12 @@ fn compute_feedback(answer: &[u8; WORD_LEN as usize], guess: &[u8; WORD_LEN as u
             }
         }
     }
-    result.to_vec()
+
+    let mut out = Vec::new(env);
+    for v in result.iter() {
+        out.push_back(*v);
+    }
+    out
 }
 
 fn empty_stats(env: &Env) -> PlayerStats {
@@ -416,7 +357,7 @@ fn empty_stats(env: &Env) -> PlayerStats {
     }
 }
 
-fn update_stats_win(env: &Env, player: &Address, guesses: u32) -> PlayerStats {
+fn update_stats_win(env: &Env, player: &Address, guesses: u32) {
     let mut stats: PlayerStats = env
         .storage()
         .instance()
@@ -442,7 +383,6 @@ fn update_stats_win(env: &Env, player: &Address, guesses: u32) -> PlayerStats {
         .set(&DataKey::PlayerStats(player.clone()), &stats);
 
     upsert_leaderboard(env, player, stats.games_won, stats.current_streak);
-    stats
 }
 
 fn update_stats_loss(env: &Env, player: &Address) {
