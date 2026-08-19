@@ -7,14 +7,14 @@ import { Footer } from "@/components/ui/Footer";
 
 const features = [
   {
-    title: "On-Chain Truth",
+    title: "Daily Battle",
     description:
-      "Every guess is a signed transaction. Every win is provable. No server, no database — just the blockchain.",
+      "Compete against other players each day. Solve the word in fewer guesses to climb the leaderboard and claim the daily XLM prize pool.",
   },
   {
-    title: "Zero-Fee Reads",
+    title: "Pay Only When You Guess",
     description:
-      "All contract reads use simulation — zero fees. You only sign when you start a game or submit a guess.",
+      "Transactions are only recorded when you submit a guess. Reading the board, checking stats, and browsing the leaderboard cost nothing.",
   },
   {
     title: "Immutable Leaderboard",
@@ -27,14 +27,14 @@ const features = [
       "Built on Soroban smart contracts. Fast finality, low cost, and the security of the Stellar network.",
   },
   {
-    title: "Classic Rules",
+    title: "Campaign Mode",
     description:
-      "5 letters, 6 guesses, daily word rotation. Green, yellow, gray feedback — the game you know and love.",
+      "10 levels of increasing difficulty with auto-generated words. From common English to expert-level vocabulary.",
   },
   {
-    title: "Wallet Native",
+    title: "Full Keyboard Support",
     description:
-      "Connect with Freighter, Albedo, or any Stellar wallet. Your identity is your wallet address.",
+      "Type directly on your physical keyboard. Enter to submit, Backspace to delete. No mouse required.",
   },
 ];
 
@@ -97,7 +97,7 @@ export default function LandingPage() {
             transition={{ delay: 0.8, duration: 0.6 }}
             className="text-lg sm:text-xl text-[var(--color-muted)] max-w-2xl mb-3 font-light"
           >
-            Every guess is a signed transaction. Every win is an on-chain claim.
+            Guess the word. Beat other players. Win the daily prize.
           </motion.p>
 
           <motion.p
@@ -106,8 +106,8 @@ export default function LandingPage() {
             transition={{ delay: 0.95, duration: 0.6 }}
             className="text-sm text-[var(--color-muted)] mb-12 max-w-lg opacity-60 font-light"
           >
-            The daily word game where the answer lives on the Stellar blockchain.
-            Prove your streak. Own your stats. Trust the chain.
+            Every guess is a signed transaction on the Stellar blockchain.
+            Fewer guesses means a higher rank. Top players share the daily XLM pool.
           </motion.p>
 
           <motion.div
