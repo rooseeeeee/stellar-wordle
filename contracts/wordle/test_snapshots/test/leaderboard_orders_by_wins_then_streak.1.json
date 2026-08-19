@@ -828,6 +828,45 @@
         {
           "contract_data": {
             "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+            "key": {
+              "vec": [
+                {
+                  "symbol": "WordSecret"
+                }
+              ]
+            },
+            "durability": "temporary"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+                "key": {
+                  "vec": [
+                    {
+                      "symbol": "WordSecret"
+                    }
+                  ]
+                },
+                "durability": "temporary",
+                "val": {
+                  "string": "space"
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          34560
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
             "key": "ledger_key_contract_instance",
             "durability": "persistent"
           }
@@ -1245,12 +1284,12 @@
                         "key": {
                           "vec": [
                             {
-                              "symbol": "Word"
+                              "symbol": "WordHash"
                             }
                           ]
                         },
                         "val": {
-                          "string": "space"
+                          "bytes": "3f49dbbfe051cb20cc038923424fedf8d18307cc805e1520e4168e9360e2eb38"
                         }
                       }
                     ]

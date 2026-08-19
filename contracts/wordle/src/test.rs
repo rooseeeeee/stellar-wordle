@@ -24,17 +24,34 @@ fn setup() -> (Env, WordleClient<'static>, Address, Address, Address) {
 
 #[test]
 fn constructor_and_word_set() {
-    let (_env, client, _, _, _) = setup();
+    let (env, client, _, _, _) = setup();
     assert_eq!(client.get_day(), 0);
 
-    let day = client.set_word(&s(&_env, "crane"));
+    let day = client.set_word(&s(&env, "crane"));
     assert_eq!(day, 1);
-    assert_eq!(client.get_word(), s(&_env, "crane"));
     assert_eq!(client.get_day(), 1);
 
-    let day = client.set_word(&s(&_env, "space"));
+    // get_word_hash returns a hash, not the plaintext
+    let hash = client.get_word_hash();
+    assert_eq!(hash.len(), 32); // SHA-256 produces 32 bytes
+
+    // Setting a new word changes the hash
+    let day = client.set_word(&s(&env, "space"));
     assert_eq!(day, 2);
-    assert_eq!(client.get_word(), s(&_env, "space"));
+    let new_hash = client.get_word_hash();
+    assert_ne!(hash, new_hash);
+}
+
+#[test]
+fn verify_word_works() {
+    let (env, client, _, _, _) = setup();
+    client.set_word(&s(&env, "crane"));
+
+    // Correct word verifies true
+    assert_eq!(client.verify_word(&s(&env, "crane")), true);
+
+    // Wrong word verifies false
+    assert_eq!(client.verify_word(&s(&env, "space")), false);
 }
 
 #[test]
@@ -222,6 +239,33 @@ fn evaluate_double_letter_count_limited() {
         client.evaluate(&s(&env, "puppy")),
         vec![&env, YELLOW, GRAY, GREEN, GRAY, GRAY]
     );
+}
+
+// ---------------------------------------------------------------------------
+// Hashing: word is NOT exposed, only hash is public
+// ---------------------------------------------------------------------------
+
+#[test]
+fn word_hash_is_deterministic() {
+    let (env, client, _, _, _) = setup();
+    client.set_word(&s(&env, "crane"));
+    let hash1 = client.get_word_hash();
+
+    // Same word should produce same hash
+    client.set_word(&s(&env, "crane"));
+    let hash2 = client.get_word_hash();
+    assert_eq!(hash1, hash2);
+}
+
+#[test]
+fn different_words_produce_different_hashes() {
+    let (env, client, _, _, _) = setup();
+    client.set_word(&s(&env, "crane"));
+    let hash1 = client.get_word_hash();
+
+    client.set_word(&s(&env, "space"));
+    let hash2 = client.get_word_hash();
+    assert_ne!(hash1, hash2);
 }
 
 // ---------------------------------------------------------------------------

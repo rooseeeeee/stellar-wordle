@@ -15,7 +15,7 @@
               "function_name": "set_word",
               "args": [
                 {
-                  "string": "apple"
+                  "string": "crane"
                 }
               ]
             }
@@ -24,6 +24,7 @@
         }
       ]
     ],
+    [],
     []
   ],
   "ledger": {
@@ -99,7 +100,7 @@
                 },
                 "durability": "temporary",
                 "val": {
-                  "string": "apple"
+                  "string": "crane"
                 }
               }
             },
@@ -176,7 +177,7 @@
                           ]
                         },
                         "val": {
-                          "bytes": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+                          "bytes": "2c6ac23e4ffdf95f08f369eca6488b585bca0def0ddfe69f525e40d4aa2509d3"
                         }
                       }
                     ]

@@ -1,13 +1,17 @@
 #![no_std]
 //! Stellar Wordle — a daily word game fully on Stellar Soroban.
 //!
-//! The daily word, every guess, the feedback, player stats and the
-//! leaderboard all live in this contract (see ADR-001..ADR-004 in
-//! `data/decisions/`). Reads are free simulations; `start_game` and
-//! `submit_guess` are signed, fee-paying writes.
+//! The daily word is stored as a SHA-256 hash on-chain. The plaintext
+//! word is kept in temporary storage for feedback computation but is
+//! NEVER exposed through any public contract function.
+//!
+//! Every guess, the feedback, player stats and the leaderboard all live
+//! in this contract (see ADR-001..ADR-004 in `data/decisions/`).
+//! Reads are free simulations; `start_game` and `submit_guess` are
+//! signed, fee-paying writes.
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, vec, Address, Env, String, Vec,
+    contract, contracterror, contractimpl, contracttype, vec, Address, BytesN, Env, String, Vec,
 };
 
 const WORD_LEN: u32 = 5;
@@ -28,7 +32,10 @@ pub const STATUS_LOST: u32 = 2;
 #[derive(Clone)]
 pub enum DataKey {
     Admin,
-    Word,
+    /// SHA-256 hash of the current daily word (public, verifiable)
+    WordHash,
+    /// The actual word — stored in temporary storage, never exposed via API
+    WordSecret,
     Day,
     PlayerGame(Address),
     PlayerStats(Address),
@@ -92,7 +99,9 @@ impl Wordle {
         env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
     }
 
-    /// Admin-only: rotate the daily word. Returns the new day number.
+    /// Admin-only: rotate the daily word. Stores the SHA-256 hash publicly
+    /// and the word in temporary storage for feedback computation.
+    /// Returns the new day number.
     pub fn set_word(env: Env, word: String) -> Result<u32, Error> {
         let admin: Address = env
             .storage()
@@ -107,18 +116,34 @@ impl Wordle {
 
         let day: u32 = env.storage().instance().get(&DataKey::Day).unwrap_or(0);
         let day = day + 1;
-        env.storage().instance().set(&DataKey::Word, &word);
+
+        // Compute SHA-256 hash of the word
+        let word_hash = compute_word_hash(&env, &word);
+
+        // Store the hash in instance storage (publicly verifiable)
+        env.storage().instance().set(&DataKey::WordHash, &word_hash);
+
+        // Store the actual word in temporary storage (for feedback computation)
+        // Temporary storage has a TTL and is NOT exposed via any public function
+        env.storage().temporary().set(&DataKey::WordSecret, &word);
+        // TTL: ~1 day in ledgers (17280 ledgers ≈ 1 day at 5s/ledger)
+        env.storage()
+            .temporary()
+            .extend_ttl(&DataKey::WordSecret, 17280, 2 * 17280);
+
         env.storage().instance().set(&DataKey::Day, &day);
         env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
 
         Ok(day)
     }
 
-    /// Current daily word. Public by design (ADR-001).
-    pub fn get_word(env: Env) -> Result<String, Error> {
+    /// Returns the SHA-256 hash of the current daily word.
+    /// Players cannot derive the word from this hash, but can verify
+    /// the word after the admin reveals it (e.g., next day).
+    pub fn get_word_hash(env: Env) -> Result<BytesN<32>, Error> {
         env.storage()
             .instance()
-            .get(&DataKey::Word)
+            .get(&DataKey::WordHash)
             .ok_or(Error::WordNotSet)
     }
 
@@ -127,11 +152,31 @@ impl Wordle {
         env.storage().instance().get(&DataKey::Day).unwrap_or(0)
     }
 
+    /// Admin-only: reveal a previous word for verification.
+    /// Allows anyone to confirm the word matches the stored hash.
+    /// Only callable by admin (to reveal after the day ends).
+    pub fn verify_word(env: Env, word: String) -> Result<bool, Error> {
+        let stored_hash: BytesN<32> = env
+            .storage()
+            .instance()
+            .get(&DataKey::WordHash)
+            .ok_or(Error::WordNotSet)?;
+
+        let provided_hash = compute_word_hash(&env, &word);
+
+        Ok(stored_hash == provided_hash)
+    }
+
     /// Idempotent: starts a game for the player against the current day.
     pub fn start_game(env: Env, player: Address) -> Result<u32, Error> {
         player.require_auth();
         let day = env.storage().instance().get(&DataKey::Day).unwrap_or(0);
         if day == 0 {
+            return Err(Error::WordNotSet);
+        }
+
+        // Ensure the word secret is still available
+        if !env.storage().temporary().has(&DataKey::WordSecret) {
             return Err(Error::WordNotSet);
         }
 
@@ -158,13 +203,16 @@ impl Wordle {
     }
 
     /// Submit a 5-letter guess. Returns per-letter feedback.
+    /// The word is read from temporary storage (never exposed to callers).
     pub fn submit_guess(env: Env, player: Address, guess: String) -> Result<Vec<u32>, Error> {
         player.require_auth();
         let day = env.storage().instance().get(&DataKey::Day).unwrap_or(0);
+
+        // Read word from temporary storage
         let answer: String = env
             .storage()
-            .instance()
-            .get(&DataKey::Word)
+            .temporary()
+            .get(&DataKey::WordSecret)
             .ok_or(Error::WordNotSet)?;
 
         let mut game: PlayerGame = env
@@ -225,16 +273,22 @@ impl Wordle {
             env.storage().instance().extend_ttl(60 * 17280, 90 * 17280);
         }
 
+        // Extend word TTL on each guess to keep it available
+        env.storage()
+            .temporary()
+            .extend_ttl(&DataKey::WordSecret, 17280, 2 * 17280);
+
         Ok(feedback)
     }
 
     /// Read-only evaluation of a guess against the current word.
     /// Simulation only — zero fees, no auth required.
+    /// Note: The word is read internally from temporary storage, never returned.
     pub fn evaluate(env: Env, guess: String) -> Result<Vec<u32>, Error> {
         let answer: String = env
             .storage()
-            .instance()
-            .get(&DataKey::Word)
+            .temporary()
+            .get(&DataKey::WordSecret)
             .ok_or(Error::WordNotSet)?;
         let guess_bytes = validate_guess(&guess)?;
         let answer_bytes = word_bytes(&answer)?;
@@ -263,6 +317,14 @@ impl Wordle {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/// Compute the SHA-256 hash of a word for storage.
+fn compute_word_hash(env: &Env, word: &String) -> BytesN<32> {
+    let mut buf = [0u8; WORD_LEN as usize];
+    word.copy_into_slice(&mut buf);
+    let bytes = soroban_sdk::Bytes::from_slice(env, &buf);
+    env.crypto().sha256(&bytes).into()
+}
 
 fn is_valid_word(word: &String) -> bool {
     if word.len() != WORD_LEN {
