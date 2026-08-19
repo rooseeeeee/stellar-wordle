@@ -4,16 +4,18 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
-import { CAMPAIGN_LEVELS } from "@/lib/words";
+import { CAMPAIGN_LEVELS, type Difficulty } from "@/lib/words";
 
-const difficultyColors = {
+const difficultyColors: Record<Difficulty, string> = {
+  beginner: "text-[var(--color-accent)] border-[var(--color-accent)]/30",
   easy: "text-[var(--color-green)] border-[var(--color-green)]/30",
   medium: "text-[var(--color-yellow)] border-[var(--color-yellow)]/30",
   hard: "text-[var(--color-primary)] border-[var(--color-primary)]/30",
   expert: "text-red-400 border-red-400/30",
 };
 
-const difficultyBg = {
+const difficultyBg: Record<Difficulty, string> = {
+  beginner: "bg-[var(--color-accent)]/10",
   easy: "bg-[var(--color-green)]/10",
   medium: "bg-[var(--color-yellow)]/10",
   hard: "bg-[var(--color-primary)]/10",
@@ -36,9 +38,19 @@ export default function CampaignPage() {
             Campaign Mode
           </h1>
           <p className="text-[var(--color-muted)] max-w-lg mx-auto font-light">
-            Progress through 10 levels of increasing difficulty. Each level has unique
-            auto-generated words. Complete all words in a level to advance.
+            Progress through 20 levels of increasing difficulty. Each level has unique
+            procedurally generated words. Complete all words in a level to advance.
           </p>
+          <div className="flex justify-center gap-3 mt-4 flex-wrap">
+            {(["beginner", "easy", "medium", "hard", "expert"] as Difficulty[]).map((d) => (
+              <span
+                key={d}
+                className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full border ${difficultyColors[d]} ${difficultyBg[d]}`}
+              >
+                {d}
+              </span>
+            ))}
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -47,11 +59,11 @@ export default function CampaignPage() {
               key={level.level}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
+              transition={{ delay: i * 0.03 }}
             >
               <Link
                 href={`/play?mode=campaign&level=${level.level}`}
-                className={`block glass rounded-xl p-6 hover:border-[var(--color-border-bright)] transition-all group`}
+                className="block glass rounded-xl p-6 hover:border-[var(--color-border-bright)] transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
