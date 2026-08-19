@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0533;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tileGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tilePurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6d28d9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tileCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="96" fill="url(#bgGrad)" stroke="#7c3aed" stroke-width="2" opacity="0.95"/>
+
+  <!-- Constellation dots (stars) -->
+  <circle cx="35" cy="30" r="1.5" fill="#ffffff" opacity="0.7"/>
+  <circle cx="165" cy="25" r="1" fill="#ffffff" opacity="0.5"/>
+  <circle cx="20" cy="80" r="1" fill="#ffffff" opacity="0.6"/>
+  <circle cx="175" cy="70" r="1.5" fill="#ffffff" opacity="0.4"/>
+  <circle cx="30" cy="165" r="1" fill="#ffffff" opacity="0.5"/>
+  <circle cx="170" cy="160" r="1.5" fill="#ffffff" opacity="0.6"/>
+  <circle cx="55" cy="45" r="0.8" fill="#06b6d4" opacity="0.8"/>
+  <circle cx="150" cy="150" r="0.8" fill="#10b981" opacity="0.8"/>
+
+  <!-- Constellation lines -->
+  <line x1="35" y1="30" x2="55" y2="45" stroke="#06b6d4" stroke-width="0.5" opacity="0.3"/>
+  <line x1="55" y1="45" x2="20" y2="80" stroke="#7c3aed" stroke-width="0.5" opacity="0.3"/>
+  <line x1="165" y1="25" x2="175" y2="70" stroke="#06b6d4" stroke-width="0.5" opacity="0.2"/>
+  <line x1="170" y1="160" x2="150" y2="150" stroke="#10b981" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Wordle Grid - 3x3 tiles centered -->
+  <!-- Row 1 -->
+  <rect x="52" y="60" width="28" height="28" rx="4" fill="url(#tileGreen)" filter="url(#glow)"/>
+  <rect x="86" y="60" width="28" height="28" rx="4" fill="url(#tilePurple)" filter="url(#glow)"/>
+  <rect x="120" y="60" width="28" height="28" rx="4" fill="url(#tileCyan)" filter="url(#glow)"/>
+
+  <!-- Row 2 -->
+  <rect x="52" y="94" width="28" height="28" rx="4" fill="url(#tileCyan)" filter="url(#glow)"/>
+  <rect x="86" y="94" width="28" height="28" rx="4" fill="url(#tileGreen)" filter="url(#glow)"/>
+  <rect x="120" y="94" width="28" height="28" rx="4" fill="url(#tilePurple)" filter="url(#glow)"/>
+
+  <!-- Row 3 -->
+  <rect x="52" y="128" width="28" height="28" rx="4" fill="url(#tilePurple)" filter="url(#glow)"/>
+  <rect x="86" y="128" width="28" height="28" rx="4" fill="url(#tileCyan)" filter="url(#glow)"/>
+  <rect x="120" y="128" width="28" height="28" rx="4" fill="url(#tileGreen)" filter="url(#glow)"/>
+
+  <!-- Letters on tiles -->
+  <text x="66" y="80" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">S</text>
+  <text x="100" y="80" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">T</text>
+  <text x="134" y="80" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">A</text>
+
+  <text x="66" y="114" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">R</text>
+  <text x="100" y="114" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">⭐</text>
+  <text x="134" y="114" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">W</text>
+
+  <text x="66" y="148" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">O</text>
+  <text x="100" y="148" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">R</text>
+  <text x="134" y="148" font-family="monospace" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">D</text>
+
+  <!-- Star accent above grid -->
+  <polygon points="100,35 103,44 112,44 105,50 107,59 100,54 93,59 95,50 88,44 97,44" fill="#06b6d4" filter="url(#glow)" opacity="0.9"/>
+
+  <!-- Text below -->
+  <text x="100" y="178" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="3">STELLAR WORDLE</text>
+</svg>

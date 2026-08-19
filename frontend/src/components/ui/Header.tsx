@@ -24,7 +24,17 @@ export function Header() {
                   : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
               }`}
             >
-              Play
+              Daily
+            </Link>
+            <Link
+              href="/campaign"
+              className={`transition-colors ${
+                pathname === "/campaign"
+                  ? "text-[var(--color-foreground)]"
+                  : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+              }`}
+            >
+              Campaign
             </Link>
           </nav>
         </div>
