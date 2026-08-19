@@ -10,12 +10,12 @@ interface TileProps {
   rowRevealed: boolean;
 }
 
-const stateColors: Record<TileProps["state"], string> = {
-  empty: "border-gray-700 bg-transparent",
-  tbd: "border-gray-500 bg-transparent",
-  absent: "border-gray-700 bg-gray-700 text-white",
-  present: "border-yellow-500 bg-yellow-500 text-white",
-  correct: "border-green-500 bg-green-500 text-white",
+const stateClasses: Record<TileProps["state"], string> = {
+  empty: "border-[var(--color-border)] bg-transparent",
+  tbd: "border-[var(--color-border-bright)] bg-transparent",
+  absent: "tile-absent",
+  present: "tile-present",
+  correct: "tile-correct",
 };
 
 export function Tile({ letter, state, position, rowRevealed }: TileProps) {
@@ -24,24 +24,24 @@ export function Tile({ letter, state, position, rowRevealed }: TileProps) {
   return (
     <motion.div
       className={cn(
-        "w-14 h-14 sm:w-16 sm:h-16 border-2 flex items-center justify-center text-2xl font-bold uppercase rounded-md select-none",
-        stateColors[state]
+        "w-14 h-14 sm:w-16 sm:h-16 border-2 flex items-center justify-center text-2xl font-bold uppercase rounded-lg select-none text-white",
+        stateClasses[state]
       )}
       initial={
         isRevealing
-          ? { rotateX: 0 }
+          ? { rotateX: -90, opacity: 0.5 }
           : letter
             ? { scale: 1.1 }
             : undefined
       }
       animate={
         isRevealing
-          ? { rotateX: 360 }
+          ? { rotateX: 0, opacity: 1 }
           : { scale: 1 }
       }
       transition={
         isRevealing
-          ? { delay: position * 0.15, duration: 0.5 }
+          ? { delay: position * 0.15, duration: 0.4, ease: "easeOut" }
           : { duration: 0.1 }
       }
       role="cell"

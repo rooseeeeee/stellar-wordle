@@ -16,11 +16,11 @@ const ROWS = [
   ["Enter", "z", "x", "c", "v", "b", "n", "m", "Backspace"],
 ];
 
-const stateColors: Record<KeyState, string> = {
-  unused: "bg-gray-600 hover:bg-gray-500 text-white",
-  absent: "bg-gray-800 text-gray-500",
-  present: "bg-yellow-500 hover:bg-yellow-400 text-white",
-  correct: "bg-green-500 hover:bg-green-400 text-white",
+const stateClasses: Record<KeyState, string> = {
+  unused: "bg-[var(--color-border-bright)] hover:bg-[var(--color-border-bright)]/80 text-white",
+  absent: "bg-[var(--color-surface)] text-[var(--color-muted)] opacity-50",
+  present: "bg-[var(--color-yellow)] hover:bg-[var(--color-yellow-glow)] text-white shadow-[0_0_8px_rgba(245,158,11,0.3)]",
+  correct: "bg-[var(--color-green)] hover:bg-[var(--color-green-glow)] text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]",
 };
 
 export function Keyboard({ letterStates, onKey, disabled }: KeyboardProps) {
@@ -40,9 +40,11 @@ export function Keyboard({ letterStates, onKey, disabled }: KeyboardProps) {
               <button
                 key={key}
                 className={cn(
-                  "h-14 rounded-md font-bold text-sm uppercase flex items-center justify-center transition-colors",
-                  isLetter ? "w-9 sm:w-10" : "px-3 sm:px-4 bg-gray-600 hover:bg-gray-500 text-white",
-                  isLetter && stateColors[state]
+                  "h-14 rounded-lg font-bold text-sm uppercase flex items-center justify-center transition-all",
+                  isLetter
+                    ? "w-9 sm:w-10"
+                    : "px-3 sm:px-4 bg-[var(--color-border-bright)] hover:bg-[var(--color-border-bright)]/80 text-white",
+                  isLetter && stateClasses[state]
                 )}
                 onClick={() => onKey(key)}
                 disabled={disabled}

@@ -1,0 +1,14 @@
+{
+  "network": "testnet",
+  "contracts": {
+    "wordle": {
+      "address": "CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB",
+      "wasm_hash": "532716b4501c7ea11a0a73ac62dadee8166f5edba7c5cbe29867086eebf77b6f",
+      "deployer": "GD4QKRYD5ZCVU4ZT6MLGYYQZGNCMMN54BTIXMYJONML66M3HTHCKECDW",
+      "deployed_at": "2026-08-19T02:15:00Z",
+      "soroban_sdk_version": "22.0.6",
+      "explorer": "https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB",
+      "tx_hash": "e7b286c218d26d2c1cc2575d8a45488ebad1ad48d2b33fc0763ef735514c25fd"
+    }
+  }
+}
