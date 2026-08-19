@@ -30,7 +30,7 @@ export function Footer() {
             GitHub
           </a>
           <a
-            href="https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB"
+            href="https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[var(--color-foreground)] transition-colors"

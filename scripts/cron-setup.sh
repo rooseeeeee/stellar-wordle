@@ -31,7 +31,7 @@ LOG_FILE="$LOG_DIR/daily-word.log"
 mkdir -p "$LOG_DIR"
 
 # The actual cron command
-CRON_CMD="cd $PROJECT_DIR && /usr/bin/node scripts/set-daily-word.mjs --source deployer >> $LOG_FILE 2>&1"
+CRON_CMD="cd $PROJECT_DIR && /usr/bin/node scripts/set-daily-word.mjs --source wordle-deployer >> $LOG_FILE 2>&1"
 
 # Cron schedule: 00:00 UTC every day
 CRON_SCHEDULE="0 0 * * *"

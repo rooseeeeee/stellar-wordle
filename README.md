@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB">
+  <a href="https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW">
     <img src="https://img.shields.io/badge/Network-Stellar%20Testnet-7c3aed" alt="Stellar Testnet" />
   </a>
   <a href="https://github.com/rooseeeeee/wordle">
@@ -29,9 +29,9 @@ Stellar Wordle is a decentralized word-guessing game deployed on the **Stellar S
 
 | | |
 |---|---|
-| **Contract ID** | `CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB` |
+| **Contract ID** | `CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW` |
 | **Network** | Stellar Testnet |
-| **Explorer** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB) |
+| **Explorer** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW) |
 
 ---
 
@@ -152,11 +152,11 @@ Stellar Wordle demonstrates that fun, interactive gaming experiences can live en
 
 | Field | Value |
 |-------|-------|
-| **Contract ID** | `CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB` |
+| **Contract ID** | `CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW` |
 | **WASM Hash** | `532716b4501c7ea11a0a73ac62dadee8166f5edba7c5cbe29867086eebf77b6f` |
 | **Deployer** | `GD4QKRYD5ZCVU4ZT6MLGYYQZGNCMMN54BTIXMYJONML66M3HTHCKECDW` |
 | **Network** | Stellar Testnet |
-| **Explorer** | [stellar.expert](https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB) |
+| **Explorer** | [stellar.expert](https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW) |
 
 ### Deploy Commands
 
@@ -172,7 +172,7 @@ soroban contract deploy \
 
 # Initialize the contract
 soroban contract invoke \
-  --id CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB \
+  --id CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW \
   --network testnet \
   --source deployer \
   -- set_word --word "CRANE"
@@ -230,7 +230,7 @@ soroban contract deploy \
 ### Environment Variables
 
 ```env
-NEXT_PUBLIC_CONTRACT_ID=CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB
+NEXT_PUBLIC_CONTRACT_ID=CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW
 NEXT_PUBLIC_NETWORK=testnet
 NEXT_PUBLIC_RPC_URL=https://soroban-testnet.stellar.org
 ```
@@ -348,5 +348,5 @@ SOFTWARE.
 <p align="center">
   Built with 💜 on <a href="https://stellar.org">Stellar</a> | 
   <a href="https://github.com/rooseeeeee/wordle">GitHub</a> | 
-  <a href="https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB">Explorer</a>
+  <a href="https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW">Explorer</a>
 </p>

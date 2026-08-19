@@ -266,11 +266,11 @@ export default function LandingPage() {
               and compete on the global leaderboard. Playing locally? No wallet needed.
             </p>
             <div className="font-mono text-[10px] sm:text-xs text-[var(--color-accent)] break-all bg-[var(--color-surface)] rounded-lg p-3 mb-4">
-              CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB
+              CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW
             </div>
             <div className="flex justify-center gap-4">
               <a
-                href="https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB"
+                href="https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"

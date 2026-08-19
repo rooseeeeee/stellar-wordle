@@ -2,13 +2,13 @@
   "network": "testnet",
   "contracts": {
     "wordle": {
-      "address": "CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB",
-      "wasm_hash": "532716b4501c7ea11a0a73ac62dadee8166f5edba7c5cbe29867086eebf77b6f",
-      "deployer": "GD4QKRYD5ZCVU4ZT6MLGYYQZGNCMMN54BTIXMYJONML66M3HTHCKECDW",
-      "deployed_at": "2026-08-19T02:15:00Z",
-      "soroban_sdk_version": "22.0.6",
-      "explorer": "https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB",
-      "tx_hash": "e7b286c218d26d2c1cc2575d8a45488ebad1ad48d2b33fc0763ef735514c25fd"
+      "address": "CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW",
+      "wasm_hash": "f19b018a8dcefaecbccc4f9d769b86517c1ddf926ba311bd11d088e5f1cb68f9",
+      "deployer": "GBNAILTXS6O7K3X6YZKHKRUV5J6XKS5XRGQ24HUHT3AUXIUA7LYTGS6P",
+      "deployer_identity": "wordle-deployer",
+      "deployed_at": "2026-08-20T05:25:00Z",
+      "explorer": "https://stellar.expert/explorer/testnet/contract/CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW",
+      "features": ["hashed_word_storage", "leaderboard", "player_stats"]
     }
   }
 }

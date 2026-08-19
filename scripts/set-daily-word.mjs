@@ -19,11 +19,11 @@
 
 import { execSync } from "child_process";
 
-const CONTRACT = "CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB";
+const CONTRACT = "CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW";
 const NETWORK = "testnet";
 const SOURCE = process.argv.includes("--source")
   ? process.argv[process.argv.indexOf("--source") + 1]
-  : "deployer";
+  : "wordle-deployer";
 
 // ---------------------------------------------------------------------------
 // Word pools (same as frontend/src/lib/words.ts)

@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/home/richie/Projects/wordle
-ExecStart=/usr/bin/node scripts/set-daily-word.mjs --source deployer
+ExecStart=/usr/bin/node scripts/set-daily-word.mjs --source wordle-deployer
 StandardOutput=append:/home/richie/Projects/wordle/data/logs/daily-word.log
 StandardError=append:/home/richie/Projects/wordle/data/logs/daily-word.log
 # Retry on failure (up to 3 times with 5min delay)

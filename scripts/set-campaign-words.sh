@@ -4,8 +4,8 @@
 # Usage: scripts/set-campaign-words.sh [source-identity]
 set -euo pipefail
 
-SOURCE="${1:-deployer}"
-CONTRACT="CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB"
+SOURCE="${1:-wordle-deployer}"
+CONTRACT="CDXMKHTOJ74TPJS2XKL25V7R3MDQ5N766STNXH67SUSHK7DOLP2KMHSW"
 NETWORK="testnet"
 
 # Campaign words per level (auto-generated from word list)
