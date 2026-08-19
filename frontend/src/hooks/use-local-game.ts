@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { GameMode, GameStatus, KeyState } from "@/types/game";
 import {
@@ -25,18 +25,33 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
   const [currentGuess, setCurrentGuess] = useState("");
   const [shakeRow, setShakeRow] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
-
-  // Compute the identifier and word index for campaign
-  const campaignLevel = mode.type === "campaign" ? mode.level || 1 : 0;
   const [wordIndex, setWordIndex] = useState(0);
 
-  // Load game on mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Track the mode key to detect changes
+  const modeKey = mode.type === "campaign"
+    ? `campaign-${mode.level}`
+    : mode.type === "custom"
+      ? `custom-${mode.word}`
+      : "daily";
 
+  const prevModeKey = useRef(modeKey);
+
+  // Get campaign level number
+  const campaignLevel = mode.type === "campaign" ? (mode.level || 1) : 0;
+
+  // Mount
+  useEffect(() => { setMounted(true); }, []);
+
+  // Load/reload game when mode changes
   useEffect(() => {
     if (!mounted) return;
+
+    // Reset state on mode change
+    if (prevModeKey.current !== modeKey) {
+      setCurrentGuess("");
+      setShakeRow(null);
+      prevModeKey.current = modeKey;
+    }
 
     if (mode.type === "daily") {
       const state = getDailyGame();
@@ -48,7 +63,6 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
       const totalWords = config?.wordCount || 3;
 
       if (idx >= totalWords) {
-        // Level completed — show the last completed word state
         const lastState = getCampaignGame(campaignLevel, totalWords - 1);
         setGameState(lastState);
       } else {
@@ -56,7 +70,6 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
         setGameState(state);
       }
     } else if (mode.type === "custom" && mode.word) {
-      // Custom word mode
       const state: LocalGameState = {
         word: mode.word.toLowerCase(),
         guesses: [],
@@ -66,7 +79,7 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
       };
       setGameState(state);
     }
-  }, [mounted, mode.type, mode.level, mode.word, campaignLevel]);
+  }, [mounted, modeKey, mode.type, mode.word, campaignLevel]);
 
   // Derived state
   const status: GameStatus = useMemo(() => {
@@ -75,7 +88,7 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
     if (mode.type === "campaign") {
       const config = CAMPAIGN_LEVELS.find((l) => l.level === campaignLevel);
       const totalWords = config?.wordCount || 3;
-      if (wordIndex >= totalWords) return "won"; // level complete
+      if (wordIndex >= totalWords) return "won";
     }
 
     if (gameState.status === "won") return "won";
@@ -134,18 +147,8 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
       return;
     }
 
-    // Determine identifier for persistence
-    let identifier: string;
-    let persistMode: "daily" | "campaign";
-
-    if (mode.type === "daily") {
-      identifier = new Date().toISOString().split("T")[0];
-      persistMode = "daily";
-    } else if (mode.type === "campaign") {
-      identifier = `L${campaignLevel}-W${wordIndex}`;
-      persistMode = "campaign";
-    } else {
-      // Custom mode — no persistence, just update local state
+    // For custom mode — no persistence
+    if (mode.type === "custom") {
       const feedback = evaluateGuessLocal(gameState.word, guess);
       const newGuesses = [...gameState.guesses, guess];
       const newFeedbacks = [...gameState.feedbacks, feedback];
@@ -153,12 +156,7 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
       if (feedback.every((v) => v === 2)) newStatus = "won";
       else if (newGuesses.length >= 6) newStatus = "lost";
 
-      setGameState({
-        ...gameState,
-        guesses: newGuesses,
-        feedbacks: newFeedbacks,
-        status: newStatus,
-      });
+      setGameState({ ...gameState, guesses: newGuesses, feedbacks: newFeedbacks, status: newStatus });
       setCurrentGuess("");
 
       if (newStatus === "won") {
@@ -169,6 +167,18 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
       return;
     }
 
+    // Daily or campaign — persist to localStorage
+    let identifier: string;
+    let persistMode: "daily" | "campaign";
+
+    if (mode.type === "daily") {
+      identifier = new Date().toISOString().split("T")[0];
+      persistMode = "daily";
+    } else {
+      identifier = `L${campaignLevel}-W${wordIndex}`;
+      persistMode = "campaign";
+    }
+
     const newState = submitLocalGuess(persistMode, identifier, gameState, guess);
     setGameState(newState);
     setCurrentGuess("");
@@ -176,32 +186,31 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
     if (newState.status === "won") {
       if (mode.type === "campaign") {
         markWordCompleted(campaignLevel, wordIndex);
-        toast.success("Word solved!", {
-          description: `${newState.guesses.length} guess${newState.guesses.length > 1 ? "es" : ""} — Next word loading...`,
-        });
-        // Auto-advance to next word after delay
-        setTimeout(() => {
-          const config = CAMPAIGN_LEVELS.find((l) => l.level === campaignLevel);
-          const totalWords = config?.wordCount || 3;
-          const nextIdx = wordIndex + 1;
-          if (nextIdx < totalWords) {
+        const config = CAMPAIGN_LEVELS.find((l) => l.level === campaignLevel);
+        const totalWords = config?.wordCount || 3;
+        const nextIdx = wordIndex + 1;
+
+        if (nextIdx < totalWords) {
+          toast.success("Word solved!", {
+            description: `${newState.guesses.length} guess${newState.guesses.length > 1 ? "es" : ""} · Next word...`,
+          });
+          // Auto-advance to next word after delay
+          setTimeout(() => {
             setWordIndex(nextIdx);
             const nextState = getCampaignGame(campaignLevel, nextIdx);
             setGameState(nextState);
             setCurrentGuess("");
-          } else {
-            toast.success("Level Complete!", { description: `All ${totalWords} words solved!` });
-          }
-        }, 2000);
+          }, 1800);
+        } else {
+          toast.success("🎉 Level Complete!", { description: `All ${totalWords} words solved!` });
+        }
       } else {
         toast.success("Solved!", {
           description: `${newState.guesses.length} guess${newState.guesses.length > 1 ? "es" : ""}`,
         });
       }
     } else if (newState.status === "lost") {
-      toast.error("Game over", {
-        description: `The word was ${newState.word.toUpperCase()}`,
-      });
+      toast.error("Game over", { description: `The word was ${newState.word.toUpperCase()}` });
     }
   }, [gameState, currentGuess, guesses, status, mode.type, campaignLevel, wordIndex]);
 
@@ -235,15 +244,13 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
     return () => window.removeEventListener("keydown", handler);
   }, [handleKey]);
 
-  // Retry function (for campaign/daily)
+  // Retry (campaign only)
   const retry = useCallback(() => {
     if (mode.type === "campaign") {
       clearGameState("campaign", `L${campaignLevel}-W${wordIndex}`);
       const newState = getCampaignGame(campaignLevel, wordIndex);
       setGameState(newState);
       setCurrentGuess("");
-    } else if (mode.type === "daily") {
-      // Can't retry daily — it's once per day
     }
   }, [mode.type, campaignLevel, wordIndex]);
 
@@ -254,12 +261,12 @@ export function useLocalGame(mode: GameMode = { type: "daily" }) {
     status,
     letterStates,
     isSubmitting: false,
-    isLoading: !mounted,
+    isLoading: !mounted || !gameState,
     shakeRow,
     word: gameState?.word || "",
     wordIndex,
     handleKey,
-    startGame: () => {}, // No-op — local games start immediately
+    startGame: () => {},
     retry,
   };
 }
