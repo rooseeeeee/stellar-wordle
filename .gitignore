@@ -1,0 +1,34 @@
+# Rust / Soroban contract build artifacts
+contracts/wordle/target/
+contracts/**/target/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+data/logs/*.md
+!data/logs/.gitkeep
+
+# Session files (large, transient)
+session-*.md
+
+# Deployment secrets (manifests are tracked, secrets are not)
+.soroban/
