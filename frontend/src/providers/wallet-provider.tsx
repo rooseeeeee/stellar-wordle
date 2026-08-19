@@ -10,6 +10,9 @@ import {
 } from "react";
 import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
 import { FreighterModule } from "@creit.tech/stellar-wallets-kit/modules/freighter";
+import { xBullModule } from "@creit.tech/stellar-wallets-kit/modules/xbull";
+import { LobstrModule } from "@creit.tech/stellar-wallets-kit/modules/lobstr";
+import { HanaModule } from "@creit.tech/stellar-wallets-kit/modules/hana";
 import { Networks } from "@creit.tech/stellar-wallets-kit/types";
 import { STELLAR_CONFIG } from "@/lib/stellar-config";
 
@@ -32,11 +35,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize the kit once on mount
+  // Initialize the kit with all available wallet modules
   useEffect(() => {
     if (!initialized) {
       StellarWalletsKit.init({
-        modules: [new FreighterModule()],
+        modules: [
+          new FreighterModule(),
+          new xBullModule(),
+          new LobstrModule(),
+          new HanaModule(),
+        ],
         network:
           STELLAR_CONFIG.network === "testnet"
             ? Networks.TESTNET
