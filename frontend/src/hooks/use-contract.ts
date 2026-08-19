@@ -128,7 +128,7 @@ export function useContract(contractId?: string) {
       }
 
       if (getResponse.status === "SUCCESS") {
-        toast.success("Transaction confirmed!", {
+        toast.success("Transaction confirmed", {
           id: "tx-progress",
           description: `Hash: ${response.hash.slice(0, 8)}...`,
         });

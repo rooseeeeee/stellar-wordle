@@ -26,18 +26,18 @@ export default function CampaignPage() {
       <div className="starfield" />
       <Header />
 
-      <main className="flex-1 px-4 py-10 max-w-4xl mx-auto w-full">
+      <main className="flex-1 px-4 py-12 max-w-4xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center mb-12"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-3">
+          <h1 className="text-3xl sm:text-4xl font-bold gradient-text mb-4 tracking-tight">
             Campaign Mode
           </h1>
-          <p className="text-[var(--color-muted)] max-w-lg mx-auto">
+          <p className="text-[var(--color-muted)] max-w-lg mx-auto font-light">
             Progress through 10 levels of increasing difficulty. Each level has unique
-            auto-generated words. Complete all words in a level to unlock the next.
+            auto-generated words. Complete all words in a level to advance.
           </p>
         </motion.div>
 
@@ -47,35 +47,35 @@ export default function CampaignPage() {
               key={level.level}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.04 }}
             >
               <Link
                 href={`/play?mode=campaign&level=${level.level}`}
-                className={`block glass rounded-xl p-5 hover:border-[var(--color-border-bright)] transition-all group ${difficultyColors[level.difficulty]}`}
+                className={`block glass rounded-xl p-6 hover:border-[var(--color-border-bright)] transition-all group`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold opacity-30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl font-bold text-[var(--color-border-bright)] group-hover:text-[var(--color-muted)] transition-colors tabular-nums">
                       {String(level.level).padStart(2, "0")}
                     </span>
                     <div>
-                      <h3 className="font-semibold text-[var(--color-foreground)] group-hover:text-white transition-colors">
+                      <h3 className="font-semibold text-[var(--color-foreground)] group-hover:text-white transition-colors text-sm">
                         {level.name}
                       </h3>
-                      <p className="text-xs text-[var(--color-muted)]">
+                      <p className="text-xs text-[var(--color-muted)] font-light mt-0.5">
                         {level.description}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-1.5">
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full border ${difficultyColors[level.difficulty]} ${difficultyBg[level.difficulty]}`}
+                      className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full border ${difficultyColors[level.difficulty]} ${difficultyBg[level.difficulty]}`}
                     >
                       {level.difficulty}
                     </span>
-                    <p className="text-xs text-[var(--color-muted)] mt-1">
+                    <span className="text-[10px] text-[var(--color-muted)] tabular-nums">
                       {level.wordCount} words
-                    </p>
+                    </span>
                   </div>
                 </div>
               </Link>

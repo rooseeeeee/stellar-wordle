@@ -53,8 +53,8 @@ export default function PlayPage() {
                   Start Today&apos;s Game
                 </button>
               ) : (
-                <div className="glass rounded-xl p-4">
-                  <p className="text-[var(--color-muted)]">
+                <div className="glass rounded-xl p-5">
+                  <p className="text-[var(--color-muted)] text-sm font-light">
                     Connect your wallet to play
                   </p>
                 </div>
@@ -65,16 +65,16 @@ export default function PlayPage() {
           {status === "won" && (
             <motion.div
               key="won"
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="text-center mb-6"
             >
               <div className="glass-bright rounded-2xl p-6">
-                <p className="text-2xl font-bold text-[var(--color-green-glow)] mb-1">
-                  🎉 You won!
+                <p className="text-xl font-bold text-[var(--color-green-glow)] mb-1">
+                  Solved
                 </p>
-                <p className="text-sm text-[var(--color-muted)]">
-                  Solved in {guesses.length} guess{guesses.length > 1 ? "es" : ""} — on-chain proof secured
+                <p className="text-sm text-[var(--color-muted)] font-light">
+                  {guesses.length} guess{guesses.length > 1 ? "es" : ""} — on-chain proof secured
                 </p>
               </div>
             </motion.div>
@@ -83,16 +83,16 @@ export default function PlayPage() {
           {status === "lost" && (
             <motion.div
               key="lost"
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="text-center mb-6"
             >
               <div className="glass-bright rounded-2xl p-6">
-                <p className="text-2xl font-bold text-red-400 mb-1">
+                <p className="text-xl font-bold text-red-400 mb-1">
                   Game Over
                 </p>
-                <p className="text-sm text-[var(--color-muted)]">
-                  Better luck tomorrow!
+                <p className="text-sm text-[var(--color-muted)] font-light">
+                  Better luck tomorrow
                 </p>
               </div>
             </motion.div>

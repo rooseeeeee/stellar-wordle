@@ -57,7 +57,7 @@ export function useGame() {
         new Address(address).toScVal(),
       ]);
       setStatus("playing");
-      toast.success("Game started!", {
+      toast.success("Game started", {
         description: "Make your first guess.",
       });
     } catch (err: unknown) {
@@ -100,13 +100,13 @@ export function useGame() {
       // Check win
       if (fb.every((v: number) => v === 2)) {
         setStatus("won");
-        toast.success("🎉 You won!", {
-          description: `Solved in ${newGuesses.length} guess${newGuesses.length > 1 ? "es" : ""}!`,
+        toast.success("Solved", {
+          description: `${newGuesses.length} guess${newGuesses.length > 1 ? "es" : ""} — on-chain proof secured.`,
         });
       } else if (newGuesses.length >= 6) {
         setStatus("lost");
         toast.error("Game over", {
-          description: "Better luck tomorrow!",
+          description: "Better luck tomorrow.",
         });
       }
     } catch (err: unknown) {
