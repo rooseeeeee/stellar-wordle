@@ -1,0 +1,15 @@
+[Unit]
+Description=Stellar Wordle — Daily Word Timer (00:00 UTC)
+
+[Timer]
+# Run at midnight UTC every day
+OnCalendar=*-*-* 00:00:00 UTC
+# If the system was off at trigger time, run on next boot
+Persistent=true
+# Small random delay to avoid thundering herd (0-60s)
+RandomizedDelaySec=60
+# How accurate the timer needs to be
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

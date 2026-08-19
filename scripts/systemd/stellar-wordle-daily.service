@@ -1,0 +1,19 @@
+[Unit]
+Description=Stellar Wordle — Set Daily Word
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/richie/Projects/wordle
+ExecStart=/usr/bin/node scripts/set-daily-word.mjs --source deployer
+StandardOutput=append:/home/richie/Projects/wordle/data/logs/daily-word.log
+StandardError=append:/home/richie/Projects/wordle/data/logs/daily-word.log
+# Retry on failure (up to 3 times with 5min delay)
+Restart=on-failure
+RestartSec=300
+StartLimitBurst=3
+StartLimitIntervalSec=1800
+
+[Install]
+WantedBy=multi-user.target
