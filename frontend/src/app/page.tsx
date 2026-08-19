@@ -5,45 +5,12 @@ import { motion } from "framer-motion";
 import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 
-const features = [
-  {
-    title: "Daily Battle",
-    description:
-      "Compete against other players each day. Solve the word in fewer guesses to climb the leaderboard and claim the daily XLM prize pool.",
-  },
-  {
-    title: "Pay Only When You Guess",
-    description:
-      "Transactions are only recorded when you submit a guess. Reading the board, checking stats, and browsing the leaderboard cost nothing.",
-  },
-  {
-    title: "Immutable Leaderboard",
-    description:
-      "Your streak and rank live on-chain. Top 100 players by wins, verified by anyone, owned by no one.",
-  },
-  {
-    title: "Stellar Powered",
-    description:
-      "Built on Soroban smart contracts. Fast finality, low cost, and the security of the Stellar network.",
-  },
-  {
-    title: "Campaign Mode",
-    description:
-      "10 levels of increasing difficulty with auto-generated words. From common English to expert-level vocabulary.",
-  },
-  {
-    title: "Full Keyboard Support",
-    description:
-      "Type directly on your physical keyboard. Enter to submit, Backspace to delete. No mouse required.",
-  },
-];
-
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 };
 
@@ -53,31 +20,37 @@ export default function LandingPage() {
       <div className="starfield" />
       <Header />
 
-      {/* Hero Section */}
       <main className="flex-1">
-        <section className="relative flex flex-col items-center justify-center px-4 pt-24 pb-32 text-center">
-          {/* Decorative tiles */}
+        {/* Hero */}
+        <section className="relative flex flex-col items-center justify-center px-4 pt-20 pb-28 text-center">
+          {/* Animated word tiles */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="flex gap-2 mb-10"
+            transition={{ duration: 0.7 }}
+            className="flex gap-[6px] mb-8"
           >
-            {["S", "T", "A", "R", "S"].map((letter, i) => (
+            {[
+              { letter: "S", state: "correct" },
+              { letter: "T", state: "absent" },
+              { letter: "A", state: "present" },
+              { letter: "R", state: "absent" },
+              { letter: "S", state: "correct" },
+            ].map((tile, i) => (
               <motion.div
                 key={i}
                 initial={{ rotateX: -90, opacity: 0 }}
                 animate={{ rotateX: 0, opacity: 1 }}
-                transition={{ delay: 0.3 + i * 0.12, duration: 0.5 }}
-                className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-lg text-2xl font-bold uppercase text-white ${
-                  i === 0 || i === 4
+                transition={{ delay: 0.4 + i * 0.12, duration: 0.5 }}
+                className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl text-xl sm:text-2xl font-bold uppercase text-white ${
+                  tile.state === "correct"
                     ? "tile-correct"
-                    : i === 2
+                    : tile.state === "present"
                       ? "tile-present"
                       : "tile-absent"
                 }`}
               >
-                {letter}
+                {tile.letter}
               </motion.div>
             ))}
           </motion.div>
@@ -85,8 +58,8 @@ export default function LandingPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-5"
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4"
           >
             <span className="gradient-text">Stellar Wordle</span>
           </motion.h1>
@@ -94,62 +67,49 @@ export default function LandingPage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="text-lg sm:text-xl text-[var(--color-muted)] max-w-2xl mb-3 font-light"
+            transition={{ delay: 0.9, duration: 0.6 }}
+            className="text-base sm:text-lg text-[var(--color-muted)] max-w-xl mb-10 font-light leading-relaxed"
           >
-            Guess the word. Beat other players. Win the daily prize.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.95, duration: 0.6 }}
-            className="text-sm text-[var(--color-muted)] mb-12 max-w-lg opacity-60 font-light"
-          >
-            Every guess is a signed transaction on the Stellar blockchain.
-            Fewer guesses means a higher rank. Top players share the daily XLM pool.
+            A new word every day. 6 guesses. Play instantly — no signup, no wallet required. 
+            Challenge friends with custom words or climb the on-chain leaderboard.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.6 }}
-            className="flex gap-4 flex-wrap justify-center"
+            transition={{ delay: 1.05, duration: 0.6 }}
+            className="flex gap-3 flex-wrap justify-center"
           >
             <Link
               href="/play"
-              className="px-8 py-3.5 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-semibold text-lg transition-all glow-pulse"
+              className="px-7 py-3 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-semibold text-base transition-all glow-pulse"
             >
-              Play Now
+              Play Today&apos;s Word
             </Link>
             <Link
               href="/campaign"
-              className="px-8 py-3.5 rounded-xl glass hover:bg-[var(--color-surface-hover)] text-[var(--color-foreground)] font-semibold text-lg transition-all"
+              className="px-7 py-3 rounded-xl glass hover:bg-[var(--color-surface-hover)] text-[var(--color-foreground)] font-semibold text-base transition-all"
             >
-              Campaign Mode
+              Campaign
             </Link>
             <Link
-              href="/leaderboard"
-              className="px-8 py-3.5 rounded-xl glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] font-semibold text-lg transition-all"
+              href="/custom"
+              className="px-7 py-3 rounded-xl glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] font-semibold text-base transition-all"
             >
-              Leaderboard
+              Create Your Own
             </Link>
           </motion.div>
         </section>
 
-        {/* Features Grid */}
-        <section className="px-4 pb-28 max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-2xl sm:text-3xl font-bold text-center mb-14 tracking-tight"
-          >
-            Why Play On-Chain?
-          </motion.h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
+        {/* Stats bar */}
+        <section className="px-4 pb-16">
+          <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { value: "500+", label: "Words" },
+              { value: "20", label: "Campaign Levels" },
+              { value: "∞", label: "Custom Puzzles" },
+              { value: "5", label: "Difficulty Tiers" },
+            ].map((stat, i) => (
               <motion.div
                 key={i}
                 custom={i}
@@ -157,35 +117,110 @@ export default function LandingPage() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={fadeUp}
-                className="glass rounded-2xl p-7 hover:border-[var(--color-border-bright)] transition-colors"
+                className="glass rounded-xl p-4 text-center"
               >
-                <h3 className="text-base font-semibold mb-2 text-[var(--color-foreground)]">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-[var(--color-muted)] leading-relaxed font-light">
-                  {feature.description}
-                </p>
+                <div className="text-xl sm:text-2xl font-bold gradient-text-static">{stat.value}</div>
+                <div className="text-[10px] text-[var(--color-muted)] uppercase tracking-wider mt-1">{stat.label}</div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className="px-4 pb-28 max-w-4xl mx-auto">
+        {/* Game modes */}
+        <section className="px-4 pb-24 max-w-5xl mx-auto">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-3xl font-bold text-center mb-14 tracking-tight"
+            className="text-xl sm:text-2xl font-bold text-center mb-10 tracking-tight"
+          >
+            Choose Your Challenge
+          </motion.h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                href: "/play",
+                icon: "☀️",
+                title: "Daily",
+                desc: "A new word every day. Difficulty changes with the week.",
+                accent: "var(--color-green)",
+              },
+              {
+                href: "/campaign",
+                icon: "🚀",
+                title: "Campaign",
+                desc: "20 levels. Beginner to expert. Beat them all.",
+                accent: "var(--color-primary)",
+              },
+              {
+                href: "/custom",
+                icon: "✏️",
+                title: "Create",
+                desc: "Pick any word. Share a link. Challenge anyone.",
+                accent: "var(--color-accent)",
+              },
+              {
+                href: "/calendar",
+                icon: "📅",
+                title: "Calendar",
+                desc: "Track your daily streak. See your history.",
+                accent: "var(--color-yellow)",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={i}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+              >
+                <Link href={card.href} className="block glass-card p-6 h-full group">
+                  <div className="text-2xl mb-3">{card.icon}</div>
+                  <h3 className="text-sm font-semibold text-[var(--color-foreground)] group-hover:text-white transition-colors mb-1">
+                    {card.title}
+                  </h3>
+                  <p className="text-xs text-[var(--color-muted)] leading-relaxed font-light">
+                    {card.desc}
+                  </p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="px-4 pb-24 max-w-3xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-xl sm:text-2xl font-bold text-center mb-10 tracking-tight"
           >
             How It Works
           </motion.h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
-              { step: "01", title: "Connect Wallet", desc: "Link your Freighter or any Stellar wallet in one click" },
-              { step: "02", title: "Start Game", desc: "One signed transaction begins your daily challenge" },
-              { step: "03", title: "Guess & Win", desc: "Each guess is recorded on-chain. Win to grow your streak" },
+              {
+                step: "01",
+                title: "Guess a word",
+                desc: "Type any 5-letter word and press Enter",
+                tiles: ["🟩", "⬛", "🟨", "⬛", "⬛"],
+              },
+              {
+                step: "02",
+                title: "Read the clues",
+                desc: "Green = right spot, Yellow = wrong spot, Gray = not in word",
+                tiles: ["🟩", "🟩", "⬛", "🟨", "⬛"],
+              },
+              {
+                step: "03",
+                title: "Solve in 6 tries",
+                desc: "Use the feedback to narrow it down",
+                tiles: ["🟩", "🟩", "🟩", "🟩", "🟩"],
+              },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -196,45 +231,66 @@ export default function LandingPage() {
                 variants={fadeUp}
                 className="text-center"
               >
-                <div className="text-5xl font-bold gradient-text mb-4 tracking-tighter">{item.step}</div>
-                <h3 className="text-base font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-[var(--color-muted)] font-light">{item.desc}</p>
+                <div className="text-3xl font-bold gradient-text-static mb-3 tracking-tighter">
+                  {item.step}
+                </div>
+                <div className="flex justify-center gap-1 mb-3 text-lg">
+                  {item.tiles.map((t, j) => (
+                    <span key={j}>{t}</span>
+                  ))}
+                </div>
+                <h3 className="text-sm font-semibold mb-1">{item.title}</h3>
+                <p className="text-xs text-[var(--color-muted)] font-light">{item.desc}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Contract Info */}
-        <section className="px-4 pb-28 max-w-3xl mx-auto">
+        {/* On-chain section */}
+        <section className="px-4 pb-24 max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="glass-bright rounded-2xl p-8 text-center"
           >
-            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--color-muted)] mb-4">
-              Deployed on Stellar Testnet
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full badge-success text-[10px] font-medium uppercase tracking-wider mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-green)] animate-pulse" />
+              Testnet Live
+            </div>
+            <h3 className="text-lg font-bold mb-2">
+              Powered by Stellar Soroban
             </h3>
-            <div className="font-mono text-xs sm:text-sm text-[var(--color-accent)] break-all bg-[var(--color-surface)] rounded-lg p-4">
+            <p className="text-xs text-[var(--color-muted)] mb-5 max-w-md mx-auto font-light">
+              Connect your wallet to record guesses on-chain, track stats immutably, 
+              and compete on the global leaderboard. Playing locally? No wallet needed.
+            </p>
+            <div className="font-mono text-[10px] sm:text-xs text-[var(--color-accent)] break-all bg-[var(--color-surface)] rounded-lg p-3 mb-4">
               CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB
             </div>
-            <div className="flex justify-center gap-6 mt-5">
+            <div className="flex justify-center gap-4">
               <a
                 href="https://stellar.expert/explorer/testnet/contract/CDZ2GAIMY43JBGJMY2H6ZZUD6F4M35VZ3N7I2C3CH4DRUWW6O6RQ7KCB"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
               >
-                View on Explorer
+                Explorer ↗
               </a>
               <a
-                href="https://github.com/rooseeeeee/wordle"
+                href="https://github.com/rooseeeeee/stellar-wordle"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
               >
-                Source Code
+                Source ↗
               </a>
+              <Link
+                href="/leaderboard"
+                className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
+              >
+                Leaderboard ↗
+              </Link>
             </div>
           </motion.div>
         </section>

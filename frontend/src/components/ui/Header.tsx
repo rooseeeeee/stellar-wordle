@@ -14,6 +14,8 @@ export function Header() {
   const navLinks = [
     { href: "/play", label: "Daily" },
     { href: "/campaign", label: "Campaign" },
+    { href: "/calendar", label: "Calendar" },
+    { href: "/custom", label: "Create" },
     { href: "/leaderboard", label: "Leaderboard" },
   ];
 

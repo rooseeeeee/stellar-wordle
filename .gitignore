@@ -32,3 +32,4 @@ session-*.md
 
 # Deployment secrets (manifests are tracked, secrets are not)
 .soroban/
+.mcp.json

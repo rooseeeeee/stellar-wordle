@@ -8,6 +8,7 @@ export interface GameState {
 }
 
 export interface GameMode {
-  type: "daily" | "campaign";
+  type: "daily" | "campaign" | "custom";
   level?: number;
+  word?: string;
 }
