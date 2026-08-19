@@ -1,65 +1,43 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/ui/Header";
 import { Board } from "@/components/game/Board";
 import { Keyboard } from "@/components/game/Keyboard";
-import { useLocalGame } from "@/hooks/use-local-game";
+import { useGame } from "@/hooks/use-game";
 import { useWallet } from "@/providers/wallet-provider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import type { GameMode } from "@/types/game";
 import { CAMPAIGN_LEVELS } from "@/lib/words";
 
-// ---------------------------------------------------------------------------
-// Main play content — always uses local engine
-// ---------------------------------------------------------------------------
-
 function PlayContent() {
   const searchParams = useSearchParams();
-  const { address } = useWallet();
+  const { address, connect } = useWallet();
 
   const modeParam = searchParams.get("mode");
   const levelParam = searchParams.get("level");
-  const customWordParam = searchParams.get("word");
 
-  // Decode base64-encoded custom word
-  let customWord: string | null = null;
-  if (modeParam === "custom" && customWordParam) {
-    try {
-      customWord = atob(customWordParam);
-    } catch {
-      customWord = customWordParam;
-    }
-  }
-
-  const gameMode: GameMode = customWord
-    ? { type: "custom", word: customWord }
-    : modeParam === "campaign" && levelParam
-      ? { type: "campaign", level: parseInt(levelParam, 10) }
-      : { type: "daily" };
+  const gameMode: GameMode = modeParam === "campaign" && levelParam
+    ? { type: "campaign", level: parseInt(levelParam, 10) }
+    : { type: "daily" };
 
   const campaignLevel = gameMode.type === "campaign"
     ? CAMPAIGN_LEVELS.find((l) => l.level === gameMode.level)
     : null;
 
-  // All gameplay uses the local engine
   const {
     guesses,
     feedbacks,
     currentGuess,
     status,
     letterStates,
+    isSubmitting,
     isLoading,
-    shakeRow,
-    word,
-    wordIndex,
     handleKey,
-    retry,
-  } = useLocalGame(gameMode);
-
-  const totalWords = campaignLevel?.wordCount || 0;
+    startGame,
+  } = useGame(gameMode);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -82,7 +60,7 @@ function PlayContent() {
                   Level {campaignLevel.level}: {campaignLevel.name}
                 </h2>
                 <p className="text-xs text-[var(--color-muted)] font-light">
-                  Word {wordIndex + 1} of {totalWords} · {campaignLevel.difficulty}
+                  {campaignLevel.difficulty} · {campaignLevel.wordCount} words
                 </p>
               </div>
             </>
@@ -95,144 +73,155 @@ function PlayContent() {
               </h2>
               <p className="text-xs text-[var(--color-muted)] font-light">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
-              </p>
-              {address && (
-                <Link
-                  href="/play?chain=true"
-                  className="inline-block mt-2 text-[10px] text-[var(--color-accent)] hover:text-[var(--color-accent-glow)] transition-colors"
-                >
-                  Want on-chain mode? Play on Stellar ⛓️ →
-                </Link>
-              )}
-            </div>
-          )}
-
-          {gameMode.type === "custom" && (
-            <div className="text-center">
-              <h2 className="text-sm font-semibold text-[var(--color-foreground)]">
-                Custom Wordle
-              </h2>
-              <p className="text-xs text-[var(--color-muted)] font-light">
-                Challenge from a friend
+                {" · "}On-chain ⛓️
               </p>
             </div>
           )}
         </div>
 
-        {/* Loading state */}
-        {isLoading ? (
+        {/* Not connected state */}
+        {!address ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <Board guesses={[]} feedbacks={[]} currentGuess="" />
+            <div className="mt-6 text-center">
+              <p className="text-sm text-[var(--color-muted)] font-light mb-4">
+                Connect your wallet to play on-chain
+              </p>
+              <button
+                onClick={connect}
+                className="px-8 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-semibold text-lg transition-all glow-pulse"
+              >
+                Connect Wallet
+              </button>
+              <p className="text-[10px] text-[var(--color-muted)] mt-3">
+                Every guess is a signed transaction on Stellar
+              </p>
+            </div>
+          </div>
+        ) : isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <div className="w-8 h-8 spinner" />
-              <p className="text-sm text-[var(--color-muted)] font-light">Loading...</p>
+              <p className="text-sm text-[var(--color-muted)] font-light">Loading from chain...</p>
             </div>
           </div>
         ) : (
           <>
-            {/* Game Board */}
-            <div className="flex-1 flex items-center">
-              <Board
-                guesses={guesses}
-                feedbacks={feedbacks}
-                currentGuess={currentGuess}
-                shakeRow={shakeRow}
-              />
-            </div>
+            {/* Idle: need to start game */}
+            {status === "idle" && (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <Board guesses={[]} feedbacks={[]} currentGuess="" />
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={startGame}
+                    className="px-8 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-semibold text-lg transition-all glow-pulse"
+                  >
+                    {gameMode.type === "campaign"
+                      ? `Start Level ${gameMode.level}`
+                      : "Start Today's Game"}
+                  </button>
+                  <p className="text-[10px] text-[var(--color-muted)] mt-2">
+                    Requires a signed transaction to begin
+                  </p>
+                </div>
+              </div>
+            )}
 
-            {/* Status Messages */}
-            <AnimatePresence mode="wait">
-              {status === "won" && (
-                <motion.div
-                  key="won"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center mb-4"
-                >
-                  <div className="glass-bright rounded-2xl p-5">
-                    <p className="text-lg font-bold text-[var(--color-green-glow)] mb-1">
-                      {gameMode.type === "campaign" && wordIndex + 1 >= totalWords
-                        ? "🎉 Level Complete!"
-                        : "✨ Solved!"}
-                    </p>
-                    <p className="text-sm text-[var(--color-muted)] font-light">
-                      {guesses.length} guess{guesses.length > 1 ? "es" : ""}
-                    </p>
-                    <div className="flex gap-3 justify-center mt-3">
-                      {gameMode.type === "campaign" && wordIndex + 1 >= totalWords && (
-                        <Link
-                          href="/campaign"
-                          className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] text-xs font-medium transition-colors"
-                        >
-                          Back to Campaign
-                        </Link>
-                      )}
-                      {gameMode.type === "daily" && (
-                        <Link
-                          href="/calendar"
-                          className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] text-xs font-medium transition-colors"
-                        >
-                          View Calendar
-                        </Link>
-                      )}
+            {/* Playing / Won / Lost */}
+            {status !== "idle" && (
+              <>
+                {/* Game Board */}
+                <div className="flex-1 flex items-center">
+                  <Board
+                    guesses={guesses}
+                    feedbacks={feedbacks}
+                    currentGuess={currentGuess}
+                  />
+                </div>
+
+                {/* Status Messages */}
+                <AnimatePresence mode="wait">
+                  {status === "won" && (
+                    <motion.div
+                      key="won"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center mb-4"
+                    >
+                      <div className="glass-bright rounded-2xl p-5">
+                        <p className="text-lg font-bold text-[var(--color-green-glow)] mb-1">
+                          ✨ Solved!
+                        </p>
+                        <p className="text-sm text-[var(--color-muted)] font-light">
+                          {guesses.length} guess{guesses.length > 1 ? "es" : ""} · On-chain proof secured ⛓️
+                        </p>
+                        <div className="flex gap-3 justify-center mt-3">
+                          {gameMode.type === "campaign" && (
+                            <Link
+                              href="/campaign"
+                              className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] text-xs font-medium transition-colors"
+                            >
+                              Back to Campaign
+                            </Link>
+                          )}
+                          <Link
+                            href="/leaderboard"
+                            className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] text-xs font-medium transition-colors"
+                          >
+                            Leaderboard
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {status === "lost" && (
+                    <motion.div
+                      key="lost"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center mb-4"
+                    >
+                      <div className="glass-bright rounded-2xl p-5">
+                        <p className="text-lg font-bold text-red-400 mb-1">Game Over</p>
+                        <p className="text-sm text-[var(--color-muted)] font-light">
+                          Better luck {gameMode.type === "campaign" ? "next time" : "tomorrow"}
+                        </p>
+                        <div className="flex gap-3 justify-center mt-3">
+                          {gameMode.type === "campaign" && (
+                            <Link
+                              href="/campaign"
+                              className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-muted)] text-xs font-medium transition-colors"
+                            >
+                              Back to Campaign
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Keyboard */}
+                <div className="w-full pb-2">
+                  <Keyboard
+                    letterStates={letterStates}
+                    onKey={handleKey}
+                    disabled={status !== "playing" || isSubmitting}
+                  />
+                </div>
+
+                {/* Submitting indicator */}
+                {isSubmitting && (
+                  <div className="absolute bottom-20 left-1/2 -translate-x-1/2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[10px] text-[var(--color-muted)]">
+                      <div className="w-3 h-3 spinner" />
+                      Submitting on-chain...
                     </div>
                   </div>
-                </motion.div>
-              )}
-
-              {status === "lost" && (
-                <motion.div
-                  key="lost"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center mb-4"
-                >
-                  <div className="glass-bright rounded-2xl p-5">
-                    <p className="text-lg font-bold text-red-400 mb-1">Game Over</p>
-                    <p className="text-sm text-[var(--color-muted)] font-light">
-                      The word was <span className="text-[var(--color-foreground)] font-semibold uppercase">{word}</span>
-                    </p>
-                    <div className="flex gap-3 justify-center mt-3">
-                      {gameMode.type === "campaign" && retry && (
-                        <button
-                          onClick={retry}
-                          className="px-4 py-1.5 rounded-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-medium transition-colors"
-                        >
-                          Try Again
-                        </button>
-                      )}
-                      {gameMode.type === "campaign" && (
-                        <Link
-                          href="/campaign"
-                          className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-muted)] text-xs font-medium transition-colors"
-                        >
-                          Back
-                        </Link>
-                      )}
-                      {gameMode.type === "daily" && (
-                        <p className="text-xs text-[var(--color-muted)] mt-1">Come back tomorrow!</p>
-                      )}
-                      {gameMode.type === "custom" && (
-                        <Link
-                          href="/custom"
-                          className="px-4 py-1.5 rounded-lg glass hover:bg-[var(--color-surface-hover)] text-[var(--color-accent)] text-xs font-medium transition-colors"
-                        >
-                          Create Your Own
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Keyboard */}
-            <div className="w-full pb-2">
-              <Keyboard
-                letterStates={letterStates}
-                onKey={handleKey}
-                disabled={status !== "playing"}
-              />
-            </div>
+                )}
+              </>
+            )}
           </>
         )}
       </main>

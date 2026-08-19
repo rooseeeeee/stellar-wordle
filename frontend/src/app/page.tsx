@@ -70,8 +70,8 @@ export default function LandingPage() {
             transition={{ delay: 0.9, duration: 0.6 }}
             className="text-base sm:text-lg text-[var(--color-muted)] max-w-xl mb-10 font-light leading-relaxed"
           >
-            A new word every day. 6 guesses. Play instantly — no signup, no wallet required. 
-            Challenge friends with custom words or climb the on-chain leaderboard.
+            A new word every day. 6 guesses. Every guess is a signed transaction on the Stellar blockchain.
+            Connect your wallet, solve the word, climb the leaderboard.
           </motion.p>
 
           <motion.div
